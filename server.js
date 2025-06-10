@@ -20,12 +20,12 @@ app.use(helmet());
 
 const allowedOrigins = [
   'http://localhost:3000',
-  'https://gameshop-front-q0c1cg1ig-jose24-rgbs-projects.vercel.app', // Vercel frontend
+  'https://gameshop-front.vercel.app'
 ];
 
 app.use(cors({
   origin: function (origin, callback) {
-    if (!origin || allowedOrigins.includes(origin)) {
+    if (!origin || allowedOrigins.includes(origin) || /\.vercel\.app$/.test(origin)) {
       return callback(null, true);
     }
     callback(new Error('Not allowed by CORS'));
@@ -34,6 +34,7 @@ app.use(cors({
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
+
 
 // 🚫 Limitatore di richieste
 const limiter = rateLimit({
