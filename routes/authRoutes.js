@@ -11,18 +11,18 @@ const {
   verifyEmail,
   requestPasswordReset,
   resetPassword,
-  updateProfile 
+  updateProfile // ✅ aggiunto
 } = require('../controllers/authController');
 
-const requireAuth = require('../middleware/authmiddleware');
+const requireAuth = require('../middleware/authmiddleware'); // ✅ middleware autenticazione
 
-
+// 📁 Crea cartella upload se non esiste
 const uploadDir = path.join(__dirname, '..', 'uploads');
 if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir);
 }
 
-
+// 📸 Configurazione Multer per salvataggio immagini
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     cb(null, uploadDir);
@@ -239,8 +239,7 @@ router.put(
   updateProfile
 );
 
-module.exports = router;
-
+module.exports = router;                                    
 
 
 
