@@ -14,12 +14,9 @@ dotenv.config({
 const app = express();
 app.set('trust proxy', 1);
 
-
 connectDB();
 
-
 app.use(helmet());
-
 
 const allowedOrigins = [
   'http://localhost:3000',
@@ -61,6 +58,11 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads'), {
 
 // 📊 Documentazione Swagger
 setupSwagger(app);
+
+// --- Aggiungi questa route per la root / ---
+app.get('/', (req, res) => {
+  res.send('Backend attivo e funzionante!');
+});
 
 // 🌐 API Routes
 app.use('/api/auth', require('./routes/authRoutes'));
