@@ -6,6 +6,8 @@ const path = require('path');
 const fs = require('fs');
 const transporter = require('../utils/mailer');
 
+const clientUrl = process.env.CLIENT_ORIGIN || 'http://localhost:3000';
+
 exports.register = async (req, res) => {
   const { username, email, password } = req.body;
   try {
@@ -20,7 +22,7 @@ exports.register = async (req, res) => {
       isVerified: false
     });
 
-    const verifyLink = `http://localhost:3000/verify-email?token=${verificationToken}&email=${email}`;
+    const verifyLink = `${clientUrl}/verify-email?token=${verificationToken}&email=${email}`;
 
     await transporter.sendMail({
       from: process.env.EMAIL_USER,
@@ -82,7 +84,6 @@ exports.verifyEmail = async (req, res) => {
       return res.status(400).json({ error: 'Utente non trovato' });
     }
 
-    
     if (!user.verificationToken || user.verificationToken !== token) {
       return res.status(400).json({ error: 'Token non valido o scaduto' });
     }
@@ -112,7 +113,7 @@ exports.requestPasswordReset = async (req, res) => {
     user.resetExpires = Date.now() + 3600000; // 1 ora
     await user.save();
 
-    const link = `http://localhost:3000/reset-password?token=${token}&email=${email}`;
+    const link = `${clientUrl}/reset-password?token=${token}&email=${email}`;
 
     await transporter.sendMail({
       from: process.env.EMAIL_USER,
