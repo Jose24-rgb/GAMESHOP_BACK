@@ -19,7 +19,8 @@ connectDB();
 app.use(helmet());
 
 const allowedOrigins = [
-  'http://localhost:3000'
+  'http://localhost:3000',
+  'https://gameshop.vercel.app'
 ];
 
 app.use(cors({
