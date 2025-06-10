@@ -20,10 +20,9 @@ exports.register = async (req, res) => {
         isVerified: false
       });
   
-      const frontendBaseUrl = process.env.CLIENT_ORIGIN || 'http://localhost:3000'; // Usa la stessa variabile d'ambiente
-      // Se il tuo frontend gestisce il link di verifica come /reset/verify-email,
-      // modifica la riga seguente a: `${frontendBaseUrl}/reset/verify-email?token=${verificationToken}&email=${email}`;
-      const verifyLink = `${frontendBaseUrl}/verify-email?token=${verificationToken}&email=${email}`; // ✅ CORRETTO per /verify-email
+      const frontendBaseUrl = process.env.CLIENT_ORIGIN || 'http://localhost:3000';
+      // La rotta nel frontend è /verify-email, quindi il link è corretto così
+      const verifyLink = `${frontendBaseUrl}/verify-email?token=${verificationToken}&email=${email}`; 
   
       await transporter.sendMail({
         from: process.env.EMAIL_USER,
@@ -85,7 +84,6 @@ exports.verifyEmail = async (req, res) => {
       return res.status(400).json({ error: 'Utente non trovato' });
     }
 
-    // ⚠️ Prima controllo token, poi eventuale verifica già avvenuta
     if (!user.verificationToken || user.verificationToken !== token) {
       return res.status(400).json({ error: 'Token non valido o scaduto' });
     }
@@ -115,9 +113,9 @@ exports.requestPasswordReset = async (req, res) => {
       user.resetExpires = Date.now() + 3600000; // 1 ora
       await user.save();
   
-      // ✅ Modificato per includere /reset/
-      const frontendBaseUrl = process.env.CLIENT_ORIGIN || 'http://localhost:3000'; // Fallback per lo sviluppo locale
-      const link = `${frontendBaseUrl}/reset/reset-password?token=${token}&email=${email}`; 
+      const frontendBaseUrl = process.env.CLIENT_ORIGIN || 'http://localhost:3000';
+      // ✅ Corretto: Rimuovi /reset/ per allinearti alla rotta del frontend (/reset-password)
+      const link = `${frontendBaseUrl}/reset-password?token=${token}&email=${email}`; 
   
       await transporter.sendMail({
         from: process.env.EMAIL_USER,
