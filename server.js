@@ -19,8 +19,7 @@ connectDB();
 app.use(helmet());
 
 const allowedOrigins = [
-  'http://localhost:3000',
-  'https://gameshop-front.vercel.app'
+  'http://localhost:3000'
 ];
 
 app.use(cors({
@@ -34,6 +33,7 @@ app.use(cors({
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
+
 
 
 // 🚫 Limitatore di richieste
