@@ -21,7 +21,7 @@ exports.register = async (req, res) => {
       });
   
       const frontendBaseUrl = process.env.CLIENT_ORIGIN || 'http://localhost:3000';
-      // La rotta nel frontend è /verify-email, quindi il link è corretto così
+      // La rotta nel frontend è '/verify-email', quindi il link è corretto così
       const verifyLink = `${frontendBaseUrl}/verify-email?token=${verificationToken}&email=${email}`; 
   
       await transporter.sendMail({
