@@ -28,7 +28,7 @@ describe('Auth API', () => {
     expect(res.statusCode).toBe(201);
     expect(res.body).toHaveProperty('userId');
 
-    // ✅ Verifica simulata dell'email
+   
     await User.updateOne({ email: 'test@example.com' }, { isVerified: true });
   });
 

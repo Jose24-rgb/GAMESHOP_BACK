@@ -1,4 +1,3 @@
-// ✅ controllers/stripeController.js
 const Stripe = require('stripe');
 const crypto = require('crypto');
 const stripe = Stripe(process.env.STRIPE_SECRET_KEY);

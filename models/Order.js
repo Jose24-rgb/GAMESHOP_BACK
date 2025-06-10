@@ -39,7 +39,7 @@ const orderSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ['pagato', 'fallito', 'in_attesa_verifica'], // ✅ Aggiunti tutti gli stati possibili
+    enum: ['pagato', 'fallito', 'in_attesa_verifica'],
     default: 'pagato',
   },
 });

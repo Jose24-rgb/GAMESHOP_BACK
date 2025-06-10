@@ -82,7 +82,7 @@ exports.verifyEmail = async (req, res) => {
       return res.status(400).json({ error: 'Utente non trovato' });
     }
 
-    // ⚠️ Prima controllo token, poi eventuale verifica già avvenuta
+    
     if (!user.verificationToken || user.verificationToken !== token) {
       return res.status(400).json({ error: 'Token non valido o scaduto' });
     }

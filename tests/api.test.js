@@ -21,7 +21,7 @@ beforeAll(async () => {
   });
   userId = res.body.userId;
 
-  // ✅ Simula email verificata
+
   await User.updateOne({ email: 'apitest@example.com' }, { isVerified: true });
 
   const login = await request(app).post('/api/auth/login').send({

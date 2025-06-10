@@ -13,8 +13,8 @@ exports.getAllGames = async (req, res) => {
       priceMin,
       priceMax,
       inStock,
-      page = 1,  // Imposta la pagina di default a 1
-      limit = 9  // Imposta il limite per pagina a 9
+      page = 1,
+      limit = 9 
     } = req.query;
 
     const filter = {};
@@ -70,10 +70,10 @@ exports.getAllGames = async (req, res) => {
         break;
     }
 
-    // Pagina e limiti
+    
     const skip = (page - 1) * limit;
     const games = await Game.find(filter).sort(sortOption).skip(skip).limit(limit);
-    const totalGames = await Game.countDocuments(filter);  // Contiamo il totale per determinare il numero di pagine
+    const totalGames = await Game.countDocuments(filter);
 
     res.json({
       games,

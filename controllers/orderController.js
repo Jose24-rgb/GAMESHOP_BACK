@@ -2,11 +2,11 @@ const Order = require('../models/Order');
 const mongoose = require('mongoose');
 const Game = require('../models/Game');
 
-// ✅ Crea un nuovo ordine (manuale o da backend amministrativo)
+
 exports.createOrder = async (req, res) => {
   const { userId, games, total } = req.body;
 
-  // ✅ Validazione dati
+  
   if (!userId || !games || games.length === 0 || typeof total !== 'number' || total < 0) {
     return res.status(400).json({ error: 'Dati ordine mancanti o non validi' });
   }
@@ -46,7 +46,7 @@ exports.createOrder = async (req, res) => {
       });
     }
 
-    // ✅ Salvataggio ordine con data e stato "in attesa verifica"
+  
     const newOrder = await Order.create({
       _id: new mongoose.Types.ObjectId().toString(),
       userId,
@@ -63,14 +63,14 @@ exports.createOrder = async (req, res) => {
   }
 };
 
-// ✅ Ottieni tutti gli ordini dell’utente (pagati, falliti, in attesa...)
+
 exports.getUserOrders = async (req, res) => {
   const { userId } = req.params;
 
   try {
     const orders = await Order.find({ userId })
       .populate('games.gameId')
-      .sort({ date: -1 }); // più recenti in cima
+      .sort({ date: -1 }); 
 
     res.json(orders);
   } catch (err) {

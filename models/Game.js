@@ -61,12 +61,12 @@ const gameSchema = new mongoose.Schema({
   createdAt:     { type: Date, default: Date.now }
 });
 
-// ✅ Campo virtuale: disponibile se stock > 0
+
 gameSchema.virtual('isAvailable').get(function () {
   return typeof this.stock === 'number' && this.stock > 0;
 });
 
-// ✅ Middleware: forza Demo solo se è preordine e NON è Free to Play
+
 gameSchema.pre('validate', function (next) {
   if (this.preorder && this.type !== 'Free to Play') {
     this.type = 'Demo';

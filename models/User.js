@@ -9,7 +9,7 @@ const userSchema = new mongoose.Schema({
   verificationToken: { type: String },
   resetToken:        { type: String },
   resetExpires:      { type: Date },
-  profilePic:        { type: String }, // ✅ aggiunto campo per URL immagine profilo
+  profilePic:        { type: String }, 
 });
 
 module.exports = mongoose.model('User', userSchema);

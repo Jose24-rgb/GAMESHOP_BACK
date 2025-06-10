@@ -1,13 +1,13 @@
 const Review = require('../models/Review');
 
-// Recupera recensioni
+
 exports.getReviews = async (req, res) => {
   const { gameId } = req.params;
   const reviews = await Review.find({ gameId }).populate('userId', 'username');
   res.json(reviews);
 };
 
-// Aggiunge una recensione
+
 exports.addReview = async (req, res) => {
   const { gameId } = req.params;
   const { rating, comment } = req.body;
@@ -29,7 +29,7 @@ exports.addReview = async (req, res) => {
   }
 };
 
-// Elimina una recensione
+
 exports.deleteReview = async (req, res) => {
   const { id } = req.params;
   const review = await Review.findById(id);
@@ -44,7 +44,7 @@ exports.deleteReview = async (req, res) => {
   return res.status(403).json({ error: 'Non autorizzato a eliminare questa recensione' });
 };
 
-// Modifica una recensione (solo autore può farlo)
+
 exports.updateReview = async (req, res) => {
   const { id } = req.params;
   const { rating, comment } = req.body;
@@ -58,7 +58,7 @@ exports.updateReview = async (req, res) => {
 
   review.rating = rating;
   review.comment = comment;
-  review.date = new Date(); // 🔁 aggiorna la data
+  review.date = new Date();
   await review.save();
 
   res.json(review);

@@ -89,7 +89,7 @@ describe('Update profile', () => {
 
   test('✅ update username', async () => {
     const res = await request(app)
-      .put('/api/auth/update-profile') // route corretta
+      .put('/api/auth/update-profile')
       .set('Authorization', `Bearer ${token}`)
       .send({ username: 'updateduser' });
 

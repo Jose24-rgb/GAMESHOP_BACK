@@ -2,10 +2,10 @@ const transporter = require('./mailer');
 const User = require('../models/User');
 
 /**
- * Invia una mail HTML all'utente
- * @param {string} userId - ID MongoDB dell'utente
- * @param {string} subject - Oggetto della mail
- * @param {string} html - Contenuto HTML della mail
+ 
+ * @param {string} userId 
+ * @param {string} subject 
+ * @param {string} html 
  */
 const sendOrderEmail = async (userId, subject, html) => {
   try {
