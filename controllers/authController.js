@@ -21,7 +21,9 @@ exports.register = async (req, res) => {
       });
   
       const frontendBaseUrl = process.env.CLIENT_ORIGIN || 'http://localhost:3000'; // Usa la stessa variabile d'ambiente
-      const verifyLink = `${frontendBaseUrl}/verify-email?token=${verificationToken}&email=${email}`; // ✅ CORRETTO
+      // Se il tuo frontend gestisce il link di verifica come /reset/verify-email,
+      // modifica la riga seguente a: `${frontendBaseUrl}/reset/verify-email?token=${verificationToken}&email=${email}`;
+      const verifyLink = `${frontendBaseUrl}/verify-email?token=${verificationToken}&email=${email}`; // ✅ CORRETTO per /verify-email
   
       await transporter.sendMail({
         from: process.env.EMAIL_USER,
@@ -113,15 +115,14 @@ exports.requestPasswordReset = async (req, res) => {
       user.resetExpires = Date.now() + 3600000; // 1 ora
       await user.save();
   
-      // ✅ CORRETTO: Sintassi JavaScript valida per il template literal
+      // ✅ Modificato per includere /reset/
       const frontendBaseUrl = process.env.CLIENT_ORIGIN || 'http://localhost:3000'; // Fallback per lo sviluppo locale
-      const link = `${frontendBaseUrl}/reset-password?token=${token}&email=${email}`; 
+      const link = `${frontendBaseUrl}/reset/reset-password?token=${token}&email=${email}`; 
   
       await transporter.sendMail({
         from: process.env.EMAIL_USER,
         to: email,
         subject: 'Reset password',
-        // ✅ CORRETTO: Utilizzo della variabile 'link' correttamente nell'HTML
         html: `<p>Clicca il link per resettare la tua password:</p><a href="${link}">${link}</a>`
       });
   
