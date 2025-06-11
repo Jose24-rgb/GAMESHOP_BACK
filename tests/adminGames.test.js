@@ -11,7 +11,7 @@ const { cloudinary } = require('../config/cloudinary');
 jest.mock('../config/cloudinary', () => ({
   cloudinary: {
     uploader: {
-      
+     
       upload: jest.fn(() => Promise.resolve({ secure_url: 'http://mock.cloudinary.com/image.jpg' })),
       destroy: jest.fn(() => Promise.resolve({ result: 'ok' })), 
     },
@@ -23,13 +23,14 @@ let adminToken = '';
 let adminUserId = '';
 let normalUserToken = '';
 let normalUserId = '';
-let testGameId = ''; 
+let testGameId = '';
+
 
 beforeAll(async () => {
-
+ 
   await mongoose.connect(process.env.MONGO_URI);
 
-  
+
   await User.deleteMany({ email: { $in: ['admin@test.com', 'normal@test.com'] } });
   await Game.deleteMany({ title: 'Admin Test Game' });
   await Game.deleteMany({ title: 'Admin Test Game Updated' }); 
@@ -37,7 +38,7 @@ beforeAll(async () => {
   await Game.deleteMany({ title: 'Game for No Auth Deletion Test' });
 
 
- 
+
   const adminRegisterRes = await request(app).post('/api/auth/register').send({
     username: 'adminuser',
     email: 'admin@test.com',
@@ -54,7 +55,7 @@ beforeAll(async () => {
   });
   adminToken = adminLoginRes.body.token;
 
- 
+
   const normalRegisterRes = await request(app).post('/api/auth/register').send({
     username: 'normaluser',
     email: 'normal@test.com',
@@ -68,24 +69,24 @@ beforeAll(async () => {
     password: 'normalpassword'
   });
   normalToken = normalLoginRes.body.token;
-});
+}, 30000); 
 
 afterAll(async () => {
- 
+  
   await User.deleteMany({ email: { $in: ['admin@test.com', 'normal@test.com'] } });
   await Game.deleteMany({ title: 'Admin Test Game' });
   await Game.deleteMany({ title: 'Admin Test Game Updated' });
   await Game.deleteMany({ title: 'Game for Normal User Deletion Test' });
   await Game.deleteMany({ title: 'Game for No Auth Deletion Test' });
   await mongoose.disconnect();
-});
+}, 30000); 
 
 describe('Admin Game Management API', () => {
 
- 
+  
   describe('POST /api/games', () => {
     test('✅ dovrebbe permettere a un admin di creare un nuovo gioco', async () => {
-   
+      
       cloudinary.uploader.upload.mockClear(); 
 
       const res = await request(app)
@@ -100,7 +101,7 @@ describe('Admin Game Management API', () => {
       expect(res.statusCode).toBe(201);
       expect(res.body).toHaveProperty('_id');
       expect(res.body.title).toBe('Admin Test Game');
-      expect(cloudinary.uploader.upload).toHaveBeenCalledTimes(1); 
+      expect(cloudinary.uploader.upload).toHaveBeenCalledTimes(1);
       testGameId = res.body._id; 
     });
 
@@ -166,7 +167,7 @@ describe('Admin Game Management API', () => {
       expect(res.body).toHaveProperty('error', 'Token mancante o malformato');
     });
 
-    
+   
     test('❌ dovrebbe gestire l\'aggiornamento di un ID gioco non esistente', async () => {
       const nonExistentId = new mongoose.Types.ObjectId().toString();
       const res = await request(app)
@@ -178,10 +179,9 @@ describe('Admin Game Management API', () => {
       expect(res.body).toHaveProperty('error', 'Gioco non trovato');
     });
 
-    
+   
     test('❌ dovrebbe gestire l\'aggiornamento con ID gioco con formato non valido', async () => {
       const invalidFormatId = 'invalid-id-format';
-    
       const res = await request(app).put(`/api/games/${invalidFormatId}`)
         .set('Authorization', `Bearer ${adminToken}`)
         .field('title', 'Invalid Format Update');
@@ -190,7 +190,6 @@ describe('Admin Game Management API', () => {
       expect(res.body).toHaveProperty('error', 'ID gioco non valido');
     });
   });
-
 
   describe('DELETE /api/games/:id', () => {
     test('✅ dovrebbe permettere a un admin di eliminare un gioco', async () => {
@@ -253,10 +252,9 @@ describe('Admin Game Management API', () => {
       expect(res.body).toHaveProperty('error', 'Gioco non trovato');
     });
 
-    
+  
     test('❌ dovrebbe gestire l\'eliminazione con ID gioco con formato non valido', async () => {
       const invalidFormatId = 'invalid-id-format';
-     
       const res = await request(app).delete(`/api/games/${invalidFormatId}`)
         .set('Authorization', `Bearer ${adminToken}`);
 
