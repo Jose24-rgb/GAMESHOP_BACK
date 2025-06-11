@@ -27,13 +27,17 @@ exports.createCheckoutSession = async (req, res) => {
       };
     });
 
+    // Usa CLIENT_ORIGIN per le URL di reindirizzamento
+    const frontendBaseUrl = process.env.CLIENT_ORIGIN || 'http://localhost:3000';
+
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       mode: 'payment',
       customer_creation: 'always',
       line_items: lineItems,
-      success_url: `http://localhost:3000/success?orderId=${orderId}`,
-      cancel_url: 'http://localhost:3000/cancel',
+      // MODIFICATO: Usa frontendBaseUrl per success_url e cancel_url
+      success_url: `${frontendBaseUrl}/success?orderId=${orderId}`,
+      cancel_url: `${frontendBaseUrl}/cancel`,
       metadata: {
         orderId,
         userId,
