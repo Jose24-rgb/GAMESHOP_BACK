@@ -4,12 +4,12 @@ const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const Order = require('../models/Order');
 const Game = require('../models/Game');
 const User = require('../models/User');
-const sendOrderEmail = require('../utils/email'); // Assicurati che questo sia il percorso corretto per il tuo modulo email
+const sendOrderEmail = require('../utils/email');
 const mongoose = require('mongoose');
 
 const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
-// Recupera l'URL base del frontend dalla variabile d'ambiente
+
 const frontendBaseUrl = process.env.CLIENT_ORIGIN || 'http://localhost:3000';
 
 const successEmailHtml = ({ username, orderId, total, date, ordersUrl }) => `
@@ -112,7 +112,7 @@ router.post('/', express.raw({ type: 'application/json' }), async (req, res) => 
           orderId,
           total: newOrder.total,
           date: newOrder.date,
-          // MODIFICATO: Usa frontendBaseUrl per ordersUrl
+       
           ordersUrl: `${frontendBaseUrl}/orders`
         })
       );
@@ -163,7 +163,7 @@ router.post('/', express.raw({ type: 'application/json' }), async (req, res) => 
       if (!exists) {
         await Order.create({
           _id: orderId,
-          userId: new mongoose.Types.Types.ObjectId(userId), // Corretto da new mongoose.Types.ObjectId(userId)
+          userId: new mongoose.Types.Types.ObjectId(userId),
           games: [],
           total: 0,
           status: 'fallito',

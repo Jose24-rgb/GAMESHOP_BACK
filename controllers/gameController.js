@@ -14,7 +14,7 @@ exports.getAllGames = async (req, res) => {
       priceMax,
       inStock,
       page = 1,
-      limit = 9 
+      limit = 9
     } = req.query;
 
     const filter = {};
@@ -70,7 +70,7 @@ exports.getAllGames = async (req, res) => {
         break;
     }
 
-    
+
     const skip = (page - 1) * limit;
     const games = await Game.find(filter).sort(sortOption).skip(skip).limit(limit);
     const totalGames = await Game.countDocuments(filter);
@@ -124,6 +124,9 @@ exports.createGame = async (req, res) => {
       const dataUri = `data:${req.file.mimetype};base64,${base64}`;
       const result = await cloudinary.uploader.upload(dataUri);
       imageUrl = result.secure_url;
+    } else {
+       
+        imageUrl = ''; 
     }
 
     const isPreorder = preorder === 'true' || preorder === true;
@@ -158,6 +161,12 @@ exports.createGame = async (req, res) => {
 
 exports.updateGame = async (req, res) => {
   try {
+    const { id } = req.params;
+    
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ error: 'ID gioco non valido' });
+    }
+
     const updateData = { ...req.body };
 
     updateData.preorder = updateData.preorder === 'true' || updateData.preorder === true;
@@ -177,22 +186,47 @@ exports.updateGame = async (req, res) => {
       updateData.imageUrl = result.secure_url;
     }
 
-    const updated = await Game.findByIdAndUpdate(req.params.id, updateData, { new: true });
+    const updated = await Game.findByIdAndUpdate(id, updateData, { new: true });
+    
+   
+    if (!updated) {
+      return res.status(404).json({ error: 'Gioco non trovato' });
+    }
     res.json(updated);
   } catch (err) {
     console.error('❌ Errore aggiornamento gioco:', err.message);
+ 
+    if (err.name === 'CastError') {
+      return res.status(400).json({ error: 'ID gioco non valido' });
+    }
     res.status(500).json({ error: "Errore nell'aggiornare il gioco" });
   }
 };
 
 exports.deleteGame = async (req, res) => {
-  await Game.findByIdAndDelete(req.params.id);
-  res.status(204).end();
+  try {
+    const { id } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ error: 'ID gioco non valido' });
+    }
+
+    const deletedGame = await Game.findByIdAndDelete(id);
+    
+    
+    if (!deletedGame) {
+      return res.status(404).json({ error: 'Gioco non trovato' });
+    }
+    res.status(204).end();
+  } catch (err) {
+    console.error('❌ Errore eliminazione gioco:', err.message);
+  
+    if (err.name === 'CastError') {
+      return res.status(400).json({ error: 'ID gioco non valido' });
+    }
+    res.status(500).json({ error: "Errore nell'eliminare il gioco" });
+  }
 };
-
-
-
-
 
 
 

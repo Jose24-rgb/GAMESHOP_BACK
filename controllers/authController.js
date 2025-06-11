@@ -21,7 +21,6 @@ const User = require('../models/User');
           });
       
           const frontendBaseUrl = process.env.CLIENT_ORIGIN || 'http://localhost:3000';
-          // La rotta nel frontend è '/verify-email', quindi il link è corretto così
           const verifyLink = `${frontendBaseUrl}/verify-email?token=${verificationToken}&email=${email}`; 
       
           await transporter.sendMail({
@@ -114,7 +113,6 @@ const User = require('../models/User');
           await user.save();
       
           const frontendBaseUrl = process.env.CLIENT_ORIGIN || 'http://localhost:3000';
-          // ✅ Corretto: Rimuovi /reset/ per allinearti alla rotta del frontend (/reset-password)
           const link = `${frontendBaseUrl}/reset-password?token=${token}&email=${email}`; 
       
           await transporter.sendMail({

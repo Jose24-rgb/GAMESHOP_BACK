@@ -53,7 +53,7 @@ describe('Email verification', () => {
 describe('Password reset flow', () => {
   test('✅ request password reset sends email', async () => {
     const res = await request(app)
-      .post('/api/auth/request-reset') // route corretta
+      .post('/api/auth/request-reset')
       .send({ email: 'extra@example.com' });
 
     expect(res.statusCode).toBe(200);
