@@ -143,7 +143,8 @@ router.get('/verify-email', verifyEmail);
  * application/json:
  * schema:
  * type: object
- * required: [email]
+ * required:
+ * - email
  * properties:
  * email:
  * type: string
@@ -170,7 +171,10 @@ router.post('/request-reset', requestPasswordReset);
  * application/json:
  * schema:
  * type: object
- * required: [email, token, newPassword]
+ * required:
+ * - email
+ * - token
+ * - newPassword
  * properties:
  * email:
  * type: string
@@ -199,7 +203,7 @@ router.post('/reset-password', resetPassword);
  * tags: [Autenticazione]
  * security:
  * - bearerAuth: []
- * requestBody: // Rimosso 'consumes' da qui
+ * requestBody:
  * required: true
  * content:
  * multipart/form-data:
@@ -227,7 +231,6 @@ router.put(
 );
 
 module.exports = router;
-
 
 
 
