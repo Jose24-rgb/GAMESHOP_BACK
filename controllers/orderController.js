@@ -2,6 +2,7 @@ const Order = require('../models/Order');
 const mongoose = require('mongoose');
 const Game = require('../models/Game');
 
+
 exports.createOrder = async (req, res) => {
   const { userId, games, total } = req.body;
 
@@ -53,7 +54,7 @@ exports.createOrder = async (req, res) => {
       total,
       status: 'in_attesa_verifica',
       date: new Date(),
-      gameTitles: gameTitlesForOrder
+      gameTitles: gameTitlesForOrder 
     });
 
     res.status(201).json(newOrder);
@@ -68,7 +69,6 @@ exports.getUserOrders = async (req, res) => {
   const { userId } = req.params;
 
   try {
-   
     const orders = await Order.find({ userId })
       .populate({ 
         path: 'games.gameId',
@@ -76,19 +76,16 @@ exports.getUserOrders = async (req, res) => {
       })
       .sort({ date: -1 });
 
-   
     const ordersFormatted = orders.map(order => {
-      let finalGameTitles = order.gameTitles;
+      let finalGameTitles = order.gameTitles; 
 
-    
       if (!finalGameTitles || finalGameTitles.length === 0) {
         finalGameTitles = order.games.map(gameItem => gameItem.gameId ? gameItem.gameId.title : 'Nome sconosciuto').filter(Boolean);
       }
 
       return {
-        ...order.toObject(), 
+        ...order.toObject(),
         gameTitles: finalGameTitles.join(', '), 
-       
         games: order.games.map(gameItem => ({
             gameId: gameItem.gameId ? gameItem.gameId._id : null, 
             quantity: gameItem.quantity,
@@ -103,6 +100,41 @@ exports.getUserOrders = async (req, res) => {
     res.status(500).json({ error: 'Errore durante il recupero degli ordini' });
   }
 };
+
+
+exports.getPublicOrderDetails = async (req, res) => {
+  const { orderId } = req.params;
+
+  try {
+    const order = await Order.findById(orderId);
+
+    if (!order) {
+      return res.status(404).json({ error: 'Ordine non trovato' });
+    }
+
+    
+    if (order.status !== 'fallito' && order.status !== 'in_attesa_verifica') {
+      
+        return res.status(403).json({ error: 'Accesso negato: dettagli ordine non pubblici' });
+    }
+
+    res.json({
+      _id: order._id,
+      gameTitles: order.gameTitles.join(', '),
+      total: order.total,
+      status: order.status,
+      date: order.date
+    });
+  } catch (err) {
+    console.error('❌ Errore nel recupero dettagli ordine pubblico:', err.message);
+    
+    if (err.name === 'CastError') {
+        return res.status(400).json({ error: 'ID ordine non valido' });
+    }
+    res.status(500).json({ error: 'Errore durante il recupero dei dettagli dell\'ordine' });
+  }
+};
+
 
 
 

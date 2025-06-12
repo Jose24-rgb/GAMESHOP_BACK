@@ -26,7 +26,6 @@ const orderSchema = new mongoose.Schema({
         type: Boolean,
         default: false,
       },
-      
     },
   ],
   total: {
@@ -43,15 +42,15 @@ const orderSchema = new mongoose.Schema({
     enum: ['pagato', 'fallito', 'in_attesa_verifica'],
     default: 'pagato',
   },
- 
   gameTitles: [{
     type: String,
   }],
 }, {
-  timestamps: true, 
+  timestamps: true,
 });
 
 module.exports = mongoose.model('Order', orderSchema);
+
 
 
 

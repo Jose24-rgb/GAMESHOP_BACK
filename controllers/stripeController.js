@@ -37,7 +37,7 @@ exports.createCheckoutSession = async (req, res) => {
       line_items: lineItems,
 
       success_url: `${frontendBaseUrl}/success?orderId=${orderId}`,
-      cancel_url: `${frontendBaseUrl}/cancel`,
+      cancel_url: `${frontendBaseUrl}/cancel?orderId=${orderId}`,
       metadata: {
         orderId,
         userId,
@@ -63,6 +63,7 @@ exports.createCheckoutSession = async (req, res) => {
     res.status(500).json({ error: 'Errore durante la creazione della sessione di pagamento' });
   }
 };
+
 
 
 
