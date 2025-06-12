@@ -1,9 +1,9 @@
-const express = require('express'); 
+const express = require('express');
 const router = express.Router();
 const rateLimit = require('express-rate-limit');
 const multer = require('multer');
-const path = require('path'); 
-const fs = require('fs');     
+const path = require('path');
+const fs = require('fs');
 
 const {
   register,
@@ -11,20 +11,19 @@ const {
   verifyEmail,
   requestPasswordReset,
   resetPassword,
-  updateProfile 
+  updateProfile
 } = require('../controllers/authController');
 
-const requireAuth = require('../middleware/authmiddleware'); 
+const requireAuth = require('../middleware/authmiddleware');
 
 
-const storage = multer.memoryStorage(); 
-
+const storage = multer.memoryStorage();
 
 
 const upload = multer({ storage });
 
 const loginLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, 
+  windowMs: 15 * 60 * 1000,
   max: 5,
   message: 'Troppe richieste di login. Riprova più tardi.',
   standardHeaders: true,
@@ -200,9 +199,7 @@ router.post('/reset-password', resetPassword);
  * tags: [Autenticazione]
  * security:
  * - bearerAuth: []
- * consumes:
- * - multipart/form-data
- * requestBody:
+ * requestBody: // Rimosso 'consumes' da qui
  * required: true
  * content:
  * multipart/form-data:
@@ -230,6 +227,7 @@ router.put(
 );
 
 module.exports = router;
+
 
 
 
