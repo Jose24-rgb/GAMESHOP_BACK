@@ -10,7 +10,6 @@ const mongoose = require('mongoose');
 
 const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
-
 const frontendBaseUrl = process.env.CLIENT_ORIGIN || 'http://localhost:3000';
 
 
@@ -36,7 +35,6 @@ const successEmailHtml = ({ username, orderId, total, date, ordersUrl, gameTitle
     <p style="font-size: 12px; color: #888;">Questa è una mail automatica, non rispondere a questo messaggio.</p>
   </div>
 `;
-
 
 const errorEmailHtml = ({ username, orderId, date, gameTitles }) => `
   <div style="font-family: Arial, sans-serif; color: #333; padding: 20px;">
@@ -64,37 +62,37 @@ router.post('/', express.raw({ type: 'application/json' }), async (req, res) => 
   let event;
 
   try {
-  
     event = stripe.webhooks.constructEvent(req.body, sig, endpointSecret);
   } catch (err) {
     console.error('❌ Verifica firma fallita:', err.message);
     return res.status(400).send(`Webhook Error: ${err.message}`);
   }
 
+ 
   const eventObject = event.data.object;
   const userIdFromMetadata = eventObject.metadata?.userId;
   const orderIdFromMetadata = eventObject.metadata?.orderId;
   let gamesFromMetadata = [];
   try {
- 
+   
     gamesFromMetadata = JSON.parse(eventObject.metadata?.games || '[]');
   } catch (err) {
     console.error('❌ Errore parsing giochi da metadata:', err.message);
     gamesFromMetadata = []; 
   }
-
+  
   const gameTitlesString = gamesFromMetadata.map(g => g.title).join(', ') || 'N/A';
 
-  
+
   if (event.type === 'checkout.session.completed') {
     const session = event.data.object;
     const userId = userIdFromMetadata; 
     const orderId = orderIdFromMetadata;
-    const games = gamesFromMetadata; 
-    const gameTitles = games.map(g => g.title);
+    const games = gamesFromMetadata;
+    const gameTitles = games.map(g => g.title); 
 
     try {
-     
+      
       const exists = await Order.findById(orderId);
       if (exists) {
         console.log('⚠️ Ordine già esistente (webhook ricevuto più volte)');
@@ -103,22 +101,21 @@ router.post('/', express.raw({ type: 'application/json' }), async (req, res) => 
 
 
       const newOrder = await Order.create({
-        _id: orderId,
-        userId: new mongoose.Types.ObjectId(userId),
+        _id: orderId, 
+        userId: new mongoose.Types.ObjectId(userId), 
         games: games.map(g => ({ 
           gameId: g._id, 
           quantity: g.quantity,
-         
         })),
         total: session.amount_total / 100, 
         date: new Date(), 
-        status: 'pagato',
-        gameTitles: gameTitles 
+        status: 'pagato', 
+        gameTitles: gameTitles
       });
 
       console.log('✅ Ordine salvato con successo:', newOrder._id);
 
-    
+
       for (const g of games) {
         const game = await Game.findById(g._id);
         if (game && typeof game.stock === 'number') {
@@ -128,6 +125,7 @@ router.post('/', express.raw({ type: 'application/json' }), async (req, res) => 
       }
       console.log('📉 Stock aggiornato con successo');
 
+ 
       const user = await User.findById(userId);
       if (user) {
         await sendOrderEmail(
@@ -149,7 +147,7 @@ router.post('/', express.raw({ type: 'application/json' }), async (req, res) => 
 
     } catch (err) {
       console.error('❌ Errore salvataggio ordine, aggiornamento stock o invio email (checkout.session.completed):', err.message);
-  
+     
       const user = await User.findById(userId);
       if (user) {
         await sendOrderEmail(
@@ -159,7 +157,7 @@ router.post('/', express.raw({ type: 'application/json' }), async (req, res) => 
             username: user.username,
             orderId: orderId || 'N/A',
             date: new Date(),
-            gameTitles: gameTitlesString
+            gameTitles: gameTitlesString 
           })
         );
         console.log(`📧 Email di errore per gestione ordine inviata a: ${user.email}`);
@@ -167,16 +165,16 @@ router.post('/', express.raw({ type: 'application/json' }), async (req, res) => 
     }
   }
 
+
   else if (event.type === 'payment_intent.payment_failed') {
     console.log('📩 Evento ricevuto: payment_intent.payment_failed');
 
     const intent = event.data.object;
-  
     const orderId = orderIdFromMetadata; 
-    const userId = userIdFromMetadata;
+    const userId = userIdFromMetadata; 
     const failureDate = new Date();
 
-   
+  
 
     try {
       
@@ -197,10 +195,9 @@ router.post('/', express.raw({ type: 'application/json' }), async (req, res) => 
         console.warn(`⚠️ Nessun utente trovato con ID ${userId} per l'invio email di fallimento.`);
       }
 
-     
       const existingOrder = await Order.findById(orderId);
       if (!existingOrder) {
-   
+    
         await Order.create({
           _id: orderId,
           userId: new mongoose.Types.ObjectId(userId),
@@ -215,11 +212,11 @@ router.post('/', express.raw({ type: 'application/json' }), async (req, res) => 
         });
         console.log(`❌ Ordine fallito registrato: ${orderId}`);
       } else if (existingOrder.status !== 'pagato') {
-        
+    
           existingOrder.status = 'fallito';
           existingOrder.date = failureDate; 
-          existingOrder.total = intent.amount / 100;
-  
+          existingOrder.total = intent.amount / 100; 
+      
           existingOrder.gameTitles = gamesFromMetadata.map(g => g.title); 
           await existingOrder.save();
           console.log(`⚠️ Stato ordine ${orderId} aggiornato a fallito.`);
@@ -230,11 +227,12 @@ router.post('/', express.raw({ type: 'application/json' }), async (req, res) => 
     }
   }
 
-  
+
   res.status(200).json({ received: true });
 });
 
 module.exports = router;
+
 
 
 
