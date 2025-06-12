@@ -3,6 +3,7 @@ const router = express.Router();
 const { createOrder, getUserOrders } = require('../controllers/orderController');
 const verifyToken = require('../middleware/authmiddleware');
 
+/* Swagger disattivato
 /**
  * @swagger
  * /api/orders:
@@ -41,6 +42,7 @@ const verifyToken = require('../middleware/authmiddleware');
  */
 router.post('/', createOrder);
 
+/* Swagger disattivato
 /**
  * @swagger
  * /api/orders/{userId}:

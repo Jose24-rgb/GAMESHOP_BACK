@@ -30,7 +30,8 @@ const loginLimiter = rateLimit({
   legacyHeaders: false,
 });
 
-/*
+/* Swagger disattivato
+/**
  * @swagger
  * /api/auth/register:
  * post:
@@ -66,7 +67,8 @@ const loginLimiter = rateLimit({
  */
 router.post('/register', register);
 
-/*
+/* Swagger disattivato
+/**
  * @swagger
  * /api/auth/login:
  * post:
@@ -102,7 +104,8 @@ router.post('/register', register);
  */
 router.post('/login', loginLimiter, login);
 
-/*
+/* Swagger disattivato
+/**
  * @swagger
  * /api/auth/verify-email:
  * get:
@@ -131,7 +134,8 @@ router.post('/login', loginLimiter, login);
  */
 router.get('/verify-email', verifyEmail);
 
-/*
+/* Swagger disattivato
+/**
  * @swagger
  * /api/auth/request-reset:
  * post:
@@ -159,7 +163,8 @@ router.get('/verify-email', verifyEmail);
  */
 router.post('/request-reset', requestPasswordReset);
 
-/*
+/* Swagger disattivato
+/**
  * @swagger
  * /api/auth/reset-password:
  * post:
@@ -195,7 +200,8 @@ router.post('/request-reset', requestPasswordReset);
  */
 router.post('/reset-password', resetPassword);
 
-/*
+/* Swagger disattivato
+/**
  * @swagger
  * /api/auth/update-profile:
  * put:
