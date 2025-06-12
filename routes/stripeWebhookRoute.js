@@ -64,86 +64,29 @@ router.post('/', express.raw({ type: 'application/json' }), async (req, res) => 
     return res.status(400).send(`Webhook Error: ${err.message}`);
   }
 
-  // --- NUOVA LOGICA DI RECUPERO METADATI PIÙ ROBUSTA ---
-  let userIdFromEvent, orderIdFromEvent, gamesFromEvent = [], gameTitlesString = 'N/A';
-  let sessionObject; // Per tenere traccia della sessione se disponibile
-
-  // Logica per recuperare i metadati dall'evento in base al tipo
-  // L'orderId e userId sono spesso direttamente sul metadata dell'oggetto principale dell'evento
-  userIdFromEvent = event.data.object.metadata?.userId;
-  orderIdFromEvent = event.data.object.metadata?.orderId;
-
-  // Tentativo 1: Recupera games dalla sessione di checkout se disponibile nell'evento
-  if (event.data.object.object === 'checkout.session') {
-      sessionObject = event.data.object;
-      try {
-          gamesFromEvent = JSON.parse(sessionObject.metadata?.games || '[]');
-      } catch (err) {
-          console.error('❌ Errore parsing games da metadata della sessione (Tentativo 1):', err.message);
-      }
-  } 
-  // Tentativo 2: Se è un payment_intent, prova a recuperare la sessione di checkout associata
-  // e da lì i metadati originali. Questo è più affidabile per i fallimenti.
-  else if (event.data.object.object === 'payment_intent') {
-      const paymentIntent = event.data.object;
-      if (paymentIntent.charges && paymentIntent.charges.data.length > 0) {
-          const charge = paymentIntent.charges.data[0];
-          if (charge.payment_intent && !charge.payment_intent.metadata?.games) {
-              // Se i games non sono direttamente sull'intent, prova a recuperare la sessione
-              // In un caso di fallimento, l'ID della sessione potrebbe non essere sempre sull'intent.
-              // Cerchiamo l'ID della sessione nelle proprietà dell'intent o della carica.
-              // La proprietà 'checkout_session' su payment_intent è deprezzata.
-              // L'ID della sessione può essere trovato sul 'latest_charge.checkout_session'.
-              // Per semplicità, possiamo cercare la sessione se l'orderId è disponibile.
-              // Dato che l'orderId deriva da metadata della sessione, possiamo usarlo.
-              
-              // Se l'ID dell'ordine è presente, potremmo provare a recuperare la sessione di checkout
-              // che ha generato quell'ordine per ottenere i metadati originali.
-              // Tuttavia, Stripe non espone un modo diretto per trovare una sessione dal solo orderId
-              // (che è un tuo ID custom, non l'ID della sessione di Stripe).
-              // La strategia più sicura è assicurarci che 'games' venga passato nei metadati del payment_intent
-              // quando la sessione di checkout viene creata.
-              // Se Stripe non passa automaticamente 'games' ai metadati del payment_intent,
-              // dovrai implementare una logica nel `createCheckoutSession` per farlo.
-
-              // Per ora, ci basiamo sul fatto che i metadati originali siano stati passati.
-              // La logica di base all'inizio del webhook (event.data.object.metadata) dovrebbe catturarli.
-          }
-      }
+  // --- Recupero universale dei metadati rilevanti ---
+  // Cerchiamo di recuperare l'orderId, userId e games dai metadati dell'evento,
+  // indipendentemente dal tipo specifico di evento.
+  // Assumiamo che questi metadati siano stati passati correttamente dalla
+  // creazione della sessione di checkout ai metadati del payment_intent.
+  const eventObject = event.data.object;
+  const userId = eventObject.metadata?.userId;
+  const orderId = eventObject.metadata?.orderId;
+  let gamesFromMetadata = [];
+  try {
+    // I dati 'games' sono un JSON stringificato nei metadati
+    gamesFromMetadata = JSON.parse(eventObject.metadata?.games || '[]');
+  } catch (err) {
+    console.error('❌ Errore parsing games da metadata dell\'evento:', err.message);
+    gamesFromMetadata = [];
   }
-
-  // Fallback: se i gamesFromEvent non sono stati popolati dal metadata dell'evento stesso,
-  // e se abbiamo un orderId, prova a recuperare l'ordine dal database per i gameTitles.
-  // Questo copre i casi in cui i metadati di 'games' potrebbero non essere inclusi
-  // direttamente nell'evento payment_intent.payment_failed
-  if (gamesFromEvent.length === 0 && orderIdFromEvent) {
-      try {
-          const existingOrder = await Order.findById(orderIdFromEvent);
-          if (existingOrder && existingOrder.gameTitles && existingOrder.gameTitles.length > 0) {
-              gamesFromEvent = existingOrder.gameTitles.map(title => ({ title: title })); // Mappa a un formato compatibile
-          } else if (existingOrder && existingOrder.games && existingOrder.games.length > 0) {
-              // Se gameTitles non è popolato ma games.gameId è, prova a popolare da lì
-              await existingOrder.populate({
-                  path: 'games.gameId',
-                  select: 'title'
-              });
-              gamesFromEvent = existingOrder.games.map(g => ({ title: g.gameId?.title || 'Nome sconosciuto' }));
-          }
-      } catch (dbErr) {
-          console.error('❌ Errore recupero ordine dal DB per gameTitles (fallback):', dbErr.message);
-      }
-  }
-  
-  gameTitlesString = gamesFromEvent.map(g => g.title).filter(Boolean).join(', ') || 'N/A';
-  // --- FINE LOGICA DI RECUPERO METADATI PIÙ ROBUSTA ---
-
+  const gameTitlesString = gamesFromMetadata.map(g => g.title).join(', ') || 'N/A';
+  // --- Fine Recupero universale dei metadati rilevanti ---
 
   if (event.type === 'checkout.session.completed') {
     const session = event.data.object;
-    const userId = userIdFromEvent; 
-    const orderId = orderIdFromEvent;
-    const games = gamesFromEvent; // Usa l'array già parsato
-    const gameTitles = games.map(g => g.title); // Prepara i titoli per il campo del DB
+    const games = gamesFromMetadata; // Già parsati
+    const gameTitles = games.map(g => g.title); // Per il DB
 
     try {
       const exists = await Order.findById(orderId);
@@ -153,16 +96,16 @@ router.post('/', express.raw({ type: 'application/json' }), async (req, res) => 
       }
 
       const newOrder = await Order.create({
-        _id: orderId, 
-        userId: new mongoose.Types.ObjectId(userId), 
-        games: games.map(g => ({ 
-          gameId: g._id, 
+        _id: orderId,
+        userId: new mongoose.Types.ObjectId(userId),
+        games: games.map(g => ({
+          gameId: g._id,
           quantity: g.quantity,
         })),
-        total: session.amount_total / 100, 
-        date: new Date(), 
-        status: 'pagato', 
-        gameTitles: gameTitles // Salva l'array di titoli
+        total: session.amount_total / 100,
+        date: new Date(),
+        status: 'pagato',
+        gameTitles: gameTitles
       });
 
       console.log('✅ Ordine salvato con successo:', newOrder._id);
@@ -218,8 +161,7 @@ router.post('/', express.raw({ type: 'application/json' }), async (req, res) => 
     console.log('📩 Evento ricevuto: payment_intent.payment_failed');
 
     const intent = event.data.object;
-    const orderId = orderIdFromEvent;
-    const userId = userIdFromEvent;
+    // user ID e order ID già recuperati all'inizio
     const failureDate = new Date();
 
     try {
@@ -245,21 +187,21 @@ router.post('/', express.raw({ type: 'application/json' }), async (req, res) => 
         await Order.create({
           _id: orderId,
           userId: new mongoose.Types.ObjectId(userId),
-          games: gamesFromEvent.map(g => ({
+          games: gamesFromMetadata.map(g => ({ // Usa gamesFromMetadata (recuperato universalmente)
             gameId: g._id,
             quantity: g.quantity
           })),
           total: intent.amount / 100,
           status: 'fallito',
           date: failureDate,
-          gameTitles: gamesFromEvent.map(g => g.title)
+          gameTitles: gamesFromMetadata.map(g => g.title) // Usa gamesFromMetadata (recuperato universalmente)
         });
         console.log(`❌ Ordine fallito registrato: ${orderId}`);
       } else if (existingOrder.status !== 'pagato') {
           existingOrder.status = 'fallito';
           existingOrder.date = failureDate;
           existingOrder.total = intent.amount / 100;
-          existingOrder.gameTitles = gamesFromEvent.map(g => g.title);
+          existingOrder.gameTitles = gamesFromMetadata.map(g => g.title); // Usa gamesFromMetadata (recuperato universalmente)
           await existingOrder.save();
           console.log(`⚠️ Stato ordine ${orderId} aggiornato a fallito.`);
       }

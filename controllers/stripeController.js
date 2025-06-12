@@ -30,6 +30,15 @@ exports.createCheckoutSession = async (req, res) => {
 
     const frontendBaseUrl = process.env.CLIENT_ORIGIN || 'http://localhost:3000';
 
+    // Stringify games once here to pass to both metadata fields
+    const gamesString = JSON.stringify(games.map(g => ({
+      _id: g._id,
+      title: g.title,
+      price: g.price,
+      discount: g.discount,
+      quantity: g.quantity
+    })));
+
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       mode: 'payment',
@@ -41,18 +50,13 @@ exports.createCheckoutSession = async (req, res) => {
       metadata: {
         orderId,
         userId,
-        games: JSON.stringify(games.map(g => ({
-          _id: g._id,
-          title: g.title,
-          price: g.price,
-          discount: g.discount,
-          quantity: g.quantity
-        })))
+        games: gamesString // Passa i giochi alla session metadata
       },
       payment_intent_data: {
         metadata: {
           orderId,
-          userId
+          userId,
+          games: gamesString // AGGIUNTA CRUCIALE: Passa i giochi anche al payment_intent metadata
         }
       }
     });
@@ -63,6 +67,7 @@ exports.createCheckoutSession = async (req, res) => {
     res.status(500).json({ error: 'Errore durante la creazione della sessione di pagamento' });
   }
 };
+
 
 
 
