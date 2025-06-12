@@ -80,7 +80,7 @@ router.post('/', express.raw({ type: 'application/json' }), async (req, res) => 
     console.error('❌ Errore parsing giochi da metadata:', err.message);
     gamesFromMetadata = []; 
   }
-  
+
   const gameTitlesString = gamesFromMetadata.map(g => g.title).join(', ') || 'N/A';
 
 
@@ -88,11 +88,11 @@ router.post('/', express.raw({ type: 'application/json' }), async (req, res) => 
     const session = event.data.object;
     const userId = userIdFromMetadata; 
     const orderId = orderIdFromMetadata;
-    const games = gamesFromMetadata;
+    const games = gamesFromMetadata; 
     const gameTitles = games.map(g => g.title); 
 
     try {
-      
+     
       const exists = await Order.findById(orderId);
       if (exists) {
         console.log('⚠️ Ordine già esistente (webhook ricevuto più volte)');
@@ -110,12 +110,12 @@ router.post('/', express.raw({ type: 'application/json' }), async (req, res) => 
         total: session.amount_total / 100, 
         date: new Date(), 
         status: 'pagato', 
-        gameTitles: gameTitles
+        gameTitles: gameTitles 
       });
 
       console.log('✅ Ordine salvato con successo:', newOrder._id);
 
-
+ 
       for (const g of games) {
         const game = await Game.findById(g._id);
         if (game && typeof game.stock === 'number') {
@@ -125,7 +125,7 @@ router.post('/', express.raw({ type: 'application/json' }), async (req, res) => 
       }
       console.log('📉 Stock aggiornato con successo');
 
- 
+     
       const user = await User.findById(userId);
       if (user) {
         await sendOrderEmail(
@@ -147,7 +147,7 @@ router.post('/', express.raw({ type: 'application/json' }), async (req, res) => 
 
     } catch (err) {
       console.error('❌ Errore salvataggio ordine, aggiornamento stock o invio email (checkout.session.completed):', err.message);
-     
+      
       const user = await User.findById(userId);
       if (user) {
         await sendOrderEmail(
@@ -165,7 +165,7 @@ router.post('/', express.raw({ type: 'application/json' }), async (req, res) => 
     }
   }
 
-
+ 
   else if (event.type === 'payment_intent.payment_failed') {
     console.log('📩 Evento ricevuto: payment_intent.payment_failed');
 
@@ -174,7 +174,7 @@ router.post('/', express.raw({ type: 'application/json' }), async (req, res) => 
     const userId = userIdFromMetadata; 
     const failureDate = new Date();
 
-  
+
 
     try {
       
@@ -195,9 +195,10 @@ router.post('/', express.raw({ type: 'application/json' }), async (req, res) => 
         console.warn(`⚠️ Nessun utente trovato con ID ${userId} per l'invio email di fallimento.`);
       }
 
+    
       const existingOrder = await Order.findById(orderId);
       if (!existingOrder) {
-    
+        
         await Order.create({
           _id: orderId,
           userId: new mongoose.Types.ObjectId(userId),
@@ -212,11 +213,10 @@ router.post('/', express.raw({ type: 'application/json' }), async (req, res) => 
         });
         console.log(`❌ Ordine fallito registrato: ${orderId}`);
       } else if (existingOrder.status !== 'pagato') {
-    
+      
           existingOrder.status = 'fallito';
           existingOrder.date = failureDate; 
           existingOrder.total = intent.amount / 100; 
-      
           existingOrder.gameTitles = gamesFromMetadata.map(g => g.title); 
           await existingOrder.save();
           console.log(`⚠️ Stato ordine ${orderId} aggiornato a fallito.`);
