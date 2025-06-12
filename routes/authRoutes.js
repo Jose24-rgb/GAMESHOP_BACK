@@ -206,9 +206,9 @@ router.post('/reset-password', resetPassword);
  * requestBody:
  * required: true
  * content:
- * multipart/form-data:
+ * multipart/form-data: # Assicurati che questo livello sia correttamente indentato
  * schema:
- * type: object
+ * type: object # Questo "type" dovrebbe essere l'unico per lo schema
  * properties:
  * username:
  * type: string
@@ -231,6 +231,7 @@ router.put(
 );
 
 module.exports = router;
+
 
 
 
