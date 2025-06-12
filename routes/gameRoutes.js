@@ -13,8 +13,7 @@ const {
 const verifyToken = require('../middleware/authmiddleware');
 const isAdmin = require('../middleware/isAdmin');
 
-/* Swagger disattivato
-/**
+/*
  * @swagger
  * /api/games:
  *   get:
@@ -26,8 +25,7 @@ const isAdmin = require('../middleware/isAdmin');
  */
 router.get('/', getAllGames);
 
-/* Swagger disattivato
-/**
+/*
  * @swagger
  * /api/games/{id}:
  *   get:
@@ -47,8 +45,7 @@ router.get('/', getAllGames);
  */
 router.get('/:id', getGameById);
 
-/* Swagger disattivato
-/**
+/*
  * @swagger
  * /api/games:
  *   post:
@@ -80,8 +77,7 @@ router.get('/:id', getGameById);
  */
 router.post('/', verifyToken, isAdmin, upload.single('image'), createGame);
 
-/* Swagger disattivato
-/**
+/*
  * @swagger
  * /api/games/{id}:
  *   put:
@@ -121,8 +117,7 @@ router.post('/', verifyToken, isAdmin, upload.single('image'), createGame);
  */
 router.put('/:id', verifyToken, isAdmin, upload.single('image'), updateGame);
 
-/* Swagger disattivato
-/**
+/*
  * @swagger
  * /api/games/{id}:
  *   delete:

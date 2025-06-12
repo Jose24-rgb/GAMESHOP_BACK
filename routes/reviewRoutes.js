@@ -9,15 +9,14 @@ const {
 
 const verifyToken = require('../middleware/authmiddleware');
 
-/* Swagger disattivato
-/**
+/*
  * @swagger
  * tags:
  *   name: Recensioni
  *   description: API per la gestione delle recensioni dei giochi
  */
 
-/* Swagger disattivato
+/* 
 /**
  * @swagger
  * /api/reviews/{gameId}:
@@ -37,8 +36,7 @@ const verifyToken = require('../middleware/authmiddleware');
  */
 router.get('/:gameId', getReviews);
 
-/* Swagger disattivato
-/**
+/*
  * @swagger
  * /api/reviews/{gameId}:
  *   post:
@@ -78,8 +76,7 @@ router.get('/:gameId', getReviews);
  */
 router.post('/:gameId', verifyToken, addReview);
 
-/* Swagger disattivato
-/**
+/*
  * @swagger
  * /api/reviews/{id}:
  *   put:
@@ -116,8 +113,7 @@ router.post('/:gameId', verifyToken, addReview);
  */
 router.put('/:id', verifyToken, updateReview);
 
-/* Swagger disattivato
-/**
+/*
  * @swagger
  * /api/reviews/{id}:
  *   delete:

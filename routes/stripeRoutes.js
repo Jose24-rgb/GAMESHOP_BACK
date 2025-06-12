@@ -2,8 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { createCheckoutSession } = require('../controllers/stripeController');
 
-/* Swagger disattivato
-/**
+/*
  * @swagger
  * /api/checkout/create-checkout-session:
  *   post:
