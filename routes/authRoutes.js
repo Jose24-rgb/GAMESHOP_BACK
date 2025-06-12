@@ -30,7 +30,7 @@ const loginLimiter = rateLimit({
   legacyHeaders: false,
 });
 
-/**
+/*
  * @swagger
  * /api/auth/register:
  * post:
@@ -66,7 +66,7 @@ const loginLimiter = rateLimit({
  */
 router.post('/register', register);
 
-/**
+/*
  * @swagger
  * /api/auth/login:
  * post:
@@ -102,7 +102,7 @@ router.post('/register', register);
  */
 router.post('/login', loginLimiter, login);
 
-/**
+/*
  * @swagger
  * /api/auth/verify-email:
  * get:
@@ -131,7 +131,7 @@ router.post('/login', loginLimiter, login);
  */
 router.get('/verify-email', verifyEmail);
 
-/**
+/*
  * @swagger
  * /api/auth/request-reset:
  * post:
@@ -159,7 +159,7 @@ router.get('/verify-email', verifyEmail);
  */
 router.post('/request-reset', requestPasswordReset);
 
-/**
+/*
  * @swagger
  * /api/auth/reset-password:
  * post:
@@ -195,7 +195,7 @@ router.post('/request-reset', requestPasswordReset);
  */
 router.post('/reset-password', resetPassword);
 
-/**
+/*
  * @swagger
  * /api/auth/update-profile:
  * put:
@@ -231,6 +231,7 @@ router.put(
 );
 
 module.exports = router;
+
 
 
 
