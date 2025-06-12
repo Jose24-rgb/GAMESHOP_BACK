@@ -64,27 +64,25 @@ router.post('/', express.raw({ type: 'application/json' }), async (req, res) => 
     return res.status(400).send(`Webhook Error: ${err.message}`);
   }
 
-  // --- Recupero universale dei metadati rilevanti ---
-  // Ora ci affidiamo al fatto che Stripe.js nel frontend abbia passato
-  // i metadati 'games' sia alla sessione che all'intent.
+  
   const eventObject = event.data.object;
   const userId = eventObject.metadata?.userId;
   const orderId = eventObject.metadata?.orderId;
   let gamesFromMetadata = [];
   try {
-    // Tenta di parsare 'games' dai metadati dell'oggetto evento corrente
+    
     gamesFromMetadata = JSON.parse(eventObject.metadata?.games || '[]');
   } catch (err) {
     console.error('❌ Errore parsing games da metadata dell\'evento:', err.message);
     gamesFromMetadata = [];
   }
   const gameTitlesString = gamesFromMetadata.map(g => g.title).filter(Boolean).join(', ') || 'N/A';
-  // --- Fine Recupero universale dei metadati rilevanti ---
+
 
   if (event.type === 'checkout.session.completed') {
     const session = event.data.object;
-    const games = gamesFromMetadata; // Usa i giochi già parsati
-    const gameTitles = games.map(g => g.title).filter(Boolean); // Prepara i titoli per il campo del DB
+    const games = gamesFromMetadata; 
+    const gameTitles = games.map(g => g.title).filter(Boolean); 
 
     try {
       const exists = await Order.findById(orderId);
@@ -103,7 +101,7 @@ router.post('/', express.raw({ type: 'application/json' }), async (req, res) => 
         total: session.amount_total / 100,
         date: new Date(),
         status: 'pagato',
-        gameTitles: gameTitles // Salva l'array di titoli
+        gameTitles: gameTitles 
       });
 
       console.log('✅ Ordine salvato con successo:', newOrder._id);
@@ -184,21 +182,21 @@ router.post('/', express.raw({ type: 'application/json' }), async (req, res) => 
         await Order.create({
           _id: orderId,
           userId: new mongoose.Types.ObjectId(userId),
-          games: gamesFromMetadata.map(g => ({ // Usa gamesFromMetadata (recuperato universalmente)
+          games: gamesFromMetadata.map(g => ({ 
             gameId: g._id,
             quantity: g.quantity
           })),
           total: intent.amount / 100,
           status: 'fallito',
           date: failureDate,
-          gameTitles: gamesFromMetadata.map(g => g.title).filter(Boolean) // *** QUI SI SALVANO I TITOLI ***
+          gameTitles: gamesFromMetadata.map(g => g.title).filter(Boolean)
         });
         console.log(`❌ Ordine fallito registrato: ${orderId}`);
       } else if (existingOrder.status !== 'pagato') {
           existingOrder.status = 'fallito';
           existingOrder.date = failureDate;
           existingOrder.total = intent.amount / 100;
-          existingOrder.gameTitles = gamesFromMetadata.map(g => g.title).filter(Boolean); // *** E QUI SI AGGIORNANO ***
+          existingOrder.gameTitles = gamesFromMetadata.map(g => g.title).filter(Boolean);
           await existingOrder.save();
           console.log(`⚠️ Stato ordine ${orderId} aggiornato a fallito.`);
       }

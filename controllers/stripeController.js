@@ -29,8 +29,6 @@ exports.createCheckoutSession = async (req, res) => {
 
     const frontendBaseUrl = process.env.CLIENT_ORIGIN || 'http://localhost:3000';
 
-    // Stringify games once here to pass to both metadata fields
-    // È FONDAMENTALE che questo gamesString contenga i titoli, _id, etc.
     const gamesString = JSON.stringify(games.map(g => ({
       _id: g._id,
       title: g.title,
@@ -47,16 +45,16 @@ exports.createCheckoutSession = async (req, res) => {
 
       success_url: `${frontendBaseUrl}/success?orderId=${orderId}`,
       cancel_url: `${frontendBaseUrl}/cancel?orderId=${orderId}`,
-      metadata: { // Metadati della sessione di checkout
+      metadata: {
         orderId,
         userId,
-        games: gamesString // Questo viene passato all'evento checkout.session.completed
+        games: gamesString 
       },
-      payment_intent_data: { // Metadati che verranno passati al PaymentIntent
+      payment_intent_data: { 
         metadata: {
           orderId,
           userId,
-          games: gamesString // *** AGGIUNTA CRUCIALE E TESTATA ***: Questo viene passato all'evento payment_intent.*
+          games: gamesString
         }
       }
     });
