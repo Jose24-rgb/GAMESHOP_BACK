@@ -65,16 +65,11 @@ router.post('/', express.raw({ type: 'application/json' }), async (req, res) => 
   }
 
   // --- Recupero universale dei metadati rilevanti ---
-  // Cerchiamo di recuperare l'orderId, userId e games dai metadati dell'evento,
-  // indipendentemente dal tipo specifico di evento.
-  // Assumiamo che questi metadati siano stati passati correttamente dalla
-  // creazione della sessione di checkout ai metadati del payment_intent.
   const eventObject = event.data.object;
   const userId = eventObject.metadata?.userId;
   const orderId = eventObject.metadata?.orderId;
   let gamesFromMetadata = [];
   try {
-    // I dati 'games' sono un JSON stringificato nei metadati
     gamesFromMetadata = JSON.parse(eventObject.metadata?.games || '[]');
   } catch (err) {
     console.error('❌ Errore parsing games da metadata dell\'evento:', err.message);
@@ -161,7 +156,6 @@ router.post('/', express.raw({ type: 'application/json' }), async (req, res) => 
     console.log('📩 Evento ricevuto: payment_intent.payment_failed');
 
     const intent = event.data.object;
-    // user ID e order ID già recuperati all'inizio
     const failureDate = new Date();
 
     try {
@@ -187,21 +181,21 @@ router.post('/', express.raw({ type: 'application/json' }), async (req, res) => 
         await Order.create({
           _id: orderId,
           userId: new mongoose.Types.ObjectId(userId),
-          games: gamesFromMetadata.map(g => ({ // Usa gamesFromMetadata (recuperato universalmente)
+          games: gamesFromMetadata.map(g => ({
             gameId: g._id,
             quantity: g.quantity
           })),
           total: intent.amount / 100,
           status: 'fallito',
           date: failureDate,
-          gameTitles: gamesFromMetadata.map(g => g.title) // Usa gamesFromMetadata (recuperato universalmente)
+          gameTitles: gamesFromMetadata.map(g => g.title)
         });
         console.log(`❌ Ordine fallito registrato: ${orderId}`);
       } else if (existingOrder.status !== 'pagato') {
           existingOrder.status = 'fallito';
           existingOrder.date = failureDate;
           existingOrder.total = intent.amount / 100;
-          existingOrder.gameTitles = gamesFromMetadata.map(g => g.title); // Usa gamesFromMetadata (recuperato universalmente)
+          existingOrder.gameTitles = gamesFromMetadata.map(g => g.title);
           await existingOrder.save();
           console.log(`⚠️ Stato ordine ${orderId} aggiornato a fallito.`);
       }
@@ -215,6 +209,7 @@ router.post('/', express.raw({ type: 'application/json' }), async (req, res) => 
 });
 
 module.exports = router;
+
 
 
 
