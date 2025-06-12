@@ -2,8 +2,8 @@ const express = require('express');
 const router = express.Router();
 const rateLimit = require('express-rate-limit');
 const multer = require('multer');
-const path = require('path'); // Potrebbe non servire più, ma lo lascio se usato altrove
-const fs = require('fs');     // Potrebbe non servire più, ma lo lascio se usato altrove
+const path = require('path'); 
+const fs = require('fs');     
 
 const {
   register,
@@ -16,28 +16,10 @@ const {
 
 const requireAuth = require('../middleware/authmiddleware'); 
 
-// Elimina la creazione della cartella uploads locale, non più necessaria per Cloudinary
-// const uploadDir = path.join(__dirname, '..', 'uploads');
-// if (!fs.existsSync(uploadDir)) {
-//   fs.mkdirSync(uploadDir);
-// }
 
-// *** CORREZIONE QUI: Usa multer.memoryStorage() ***
-// Questo fa sì che il file venga memorizzato come un buffer in req.file.buffer
-// Cloudinary può quindi caricarlo direttamente dalla memoria.
 const storage = multer.memoryStorage(); 
 
-// Se usi diskStorage, multer salverebbe il file in /uploads
-// const storage = multer.diskStorage({
-//   destination: function (req, file, cb) {
-//     cb(null, uploadDir);
-//   },
-//   filename: function (req, file, cb) {
-//     const ext = path.extname(file.originalname);
-//     const base = path.basename(file.originalname, ext);
-//     cb(null, `${base}-${Date.now()}${ext}`);
-//   }
-// });
+
 
 const upload = multer({ storage });
 
@@ -243,7 +225,7 @@ router.post('/reset-password', resetPassword);
 router.put(
   '/update-profile',
   requireAuth,
-  upload.single('profilePic'), // Assicurati che 'profilePic' sia il nome del campo nel tuo frontend
+  upload.single('profilePic'),
   updateProfile
 );
 
